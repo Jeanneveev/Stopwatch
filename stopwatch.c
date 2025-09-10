@@ -7,7 +7,7 @@ typedef enum {
 	PAUSE,
 	CONTINUE,
 	STOP
-} state;
+} State;
 
 typedef enum {
 	ACTION_NA,
@@ -15,38 +15,38 @@ typedef enum {
 	ACTION_PAUSE,
 	ACTION_CONTINUE,
 	ACTION_STOP
-} action;
+} Action;
 
 typedef enum {
 	EVT_START,
 	EVT_PAUSE,
 	EVT_CONTINUE,
 	EVT_STOP
-} event;
+} Event;
 
 typedef struct {
-	state next_state;	// state to be transitioned to
-	action action_name; // action to be performed after transitioning
-} transition;
+	State next_state;	// state to be transitioned to
+	Action action_name; // action to be performed after transitioning
+} Transition;
 
-transition state_transition_table[4][4] = {
+Transition state_transition_table[4][4] = {
 	{ {START, ACTION_NA}, {PAUSE, ACTION_PAUSE}, {START, ACTION_NA}, {STOP, ACTION_STOP} },
 	{ {PAUSE, ACTION_NA}, {PAUSE, ACTION_NA}, {CONTINUE, ACTION_CONTINUE}, {STOP, ACTION_STOP} },
 	{ {CONTINUE, ACTION_NA}, {PAUSE, ACTION_PAUSE}, {CONTINUE, ACTION_NA}, {STOP, ACTION_STOP} },
 	{ {START, ACTION_START}, {STOP, ACTION_NA}, {STOP, ACTION_NA}, {STOP, ACTION_NA} }
 };
 
-state current_state = STOP;	// initial state
+State current_state = STOP;	// initial state
 time_t start_time;
 time_t current_time;
 time_t elapsed_time = 0;
 time_t total_time = 0;
 bool is_running = false;
 
-action lookup(event ev){
-	transition next_state_action = state_transition_table[current_state][ev];
+Action lookup(Event ev){
+	Transition next_state_action = state_transition_table[current_state][ev];
 
-	action next_action = next_state_action.action_name;
+	Action next_action = next_state_action.action_name;
 	if (next_action == ACTION_NA) {
 		return ACTION_NA;
 	}
@@ -56,7 +56,7 @@ action lookup(event ev){
 	return next_action;
 }
 
-void execute_action(action next_action) {
+void execute_action(Action next_action) {
 	switch (next_action) {
 		case ACTION_START:
 			start_time = time(0);
@@ -97,7 +97,7 @@ void execute_action(action next_action) {
 
 int main(void) {
 	int response;
-	action next_action;
+	Action next_action;
 
 	printf( "Hello!\n"
 		"Enter \"0\" to start the timer\n"
@@ -116,6 +116,7 @@ int main(void) {
 			continue;
 		}
 
+		// get next action based on input
 		switch (response) {
 			case 0:
 				next_action = lookup(EVT_START);
